@@ -1,3 +1,23 @@
 #!/usr/bin/env ruby
 
 require "doxieland"
+require 'commander/import'
+
+program :name, 'doxieland'
+program :version, '0.0.1'
+program :description, 'A command line tool for downloading scans from the doxie go wi-fi'
+
+global_option('-i', '--scanner-ip=xxx.xxx.xxx.xxx', 'your scanners network address') { |ip| @ip = ip }
+
+command :list do |c|
+  c.syntax = 'doxieland list'
+  c.description = 'lists all scans saved in your scanners memory'
+  c.action do |args, options|
+    Doxieland::Api.url "http://#{@ip}:8080"
+    api = Doxieland::Api.new
+
+    api.list_scans.result.each do |scan|
+      puts scan[:name]
+    end
+  end
+end
