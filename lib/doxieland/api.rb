@@ -3,6 +3,8 @@ module Doxieland
     use Handlers::JSON
 
     config :timeout, 4000
+    config :username, 'doxie'
+    config :password, nil
 
     register_actions
   end

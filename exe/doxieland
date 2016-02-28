@@ -3,21 +3,61 @@
 require "doxieland"
 require "thor"
 require "ruby-progressbar"
+require 'hirb'
 
 class CLI < Thor
   include Thor::Actions
 
   class_option 'scanner-ip', desc:'your scanners network address', banner: 'xxx.xxx.xxx.xxx', type: :string, aliases: '-i'
+  class_option :password, desc:'your scanners password', type: :string, aliases: '-p'
 
   desc "list", "list all scans saved in your scanners memory"
-
   def list
-    Doxieland::Api.url "http://#{options[:ip]}:8080"
-    api = Doxieland::Api.new
+    options = get_options_with_defaults
 
-    api.list_scans.result.each do |scan|
-      puts scan[:name]
+    scans =
+      Doxieland.api(options) do |api|
+        api.list_scans
+            .result
+            .map do |scan|
+              {
+                name:     scan[:name].match(/[0-9]{4,}/)[0],
+                scanned:  scan[:modified]
+              }
+            end
+      end
+
+    puts Hirb::Helpers::AutoTable.render(
+      scans,
+      fields: [:name, :scanned],
+      description: false
+    )
+  end
+
+  desc "defaults", "show or set default options for doxieland"
+  def defaults
+    if options.none?
+      config = Doxieland.config
+
+      if config.any?
+        puts Hirb::Helpers::AutoTable.render(
+            config,
+            description:  false,
+            headers:      { 0 => 'option', 1 => 'value' }
+          )
+      else
+        puts "no defaults set"
+      end
+
+    else
+      File.open(Doxieland.config_path, 'w') { |file| file << YAML.dump(options) }
     end
+  end
+
+    protected
+
+  def get_options_with_defaults
+    (options || HashWithIndifferentAccess.new).reverse_merge(Doxieland.config)
   end
 end
 
