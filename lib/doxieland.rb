@@ -5,6 +5,7 @@ require 'apidiesel'
 
 require 'doxieland/handlers/json'
 require 'doxieland/actions/list_scans'
+require 'doxieland/actions/get_info'
 require 'doxieland/api'
 
 module Doxieland

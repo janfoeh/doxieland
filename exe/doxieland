@@ -11,6 +11,22 @@ class CLI < Thor
   class_option 'scanner-ip', desc:'your scanners network address', banner: 'xxx.xxx.xxx.xxx', type: :string, aliases: '-i'
   class_option :password, desc:'your scanners password', type: :string, aliases: '-p'
 
+  desc "info", "show information about your scanner"
+  def info
+    options = get_options_with_defaults
+
+    response =
+      Doxieland.api(options) do |api|
+        api.get_info.result
+      end
+
+      puts Hirb::Helpers::AutoTable.render(
+          response,
+          description:  false,
+          headers:      false
+        )
+  end
+
   desc "list", "list all scans saved in your scanners memory"
   def list
     options = get_options_with_defaults
@@ -32,6 +48,8 @@ class CLI < Thor
       fields: [:name, :scanned],
       description: false
     )
+
+    puts scans.inspect
   end
 
   desc "defaults", "show or set default options for doxieland"
