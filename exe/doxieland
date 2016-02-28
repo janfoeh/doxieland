@@ -1,19 +1,18 @@
 #!/usr/bin/env ruby
 
 require "doxieland"
-require 'commander/import'
+require "thor"
+require "ruby-progressbar"
 
-program :name, 'doxieland'
-program :version, '0.0.1'
-program :description, 'A command line tool for downloading scans from the doxie go wi-fi'
+class CLI < Thor
+  include Thor::Actions
 
-global_option('-i', '--scanner-ip=xxx.xxx.xxx.xxx', 'your scanners network address') { |ip| @ip = ip }
+  class_option 'scanner-ip', desc:'your scanners network address', banner: 'xxx.xxx.xxx.xxx', type: :string, aliases: '-i'
 
-command :list do |c|
-  c.syntax = 'doxieland list'
-  c.description = 'lists all scans saved in your scanners memory'
-  c.action do |args, options|
-    Doxieland::Api.url "http://#{@ip}:8080"
+  desc "list", "list all scans saved in your scanners memory"
+
+  def list
+    Doxieland::Api.url "http://#{options[:ip]}:8080"
     api = Doxieland::Api.new
 
     api.list_scans.result.each do |scan|
@@ -21,3 +20,5 @@ command :list do |c|
     end
   end
 end
+
+CLI.start( ARGV.any? ? ARGV : ['help'] )
