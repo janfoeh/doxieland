@@ -9,6 +9,8 @@ module Doxieland
           string :path,
                   at: :name,
                   filter: ->(s) { "/scans#{s}" }
+          string :delete_path,
+                  at: :name
           string :thumbnail_path,
                   at: :name,
                   filter: ->(s) { "/thumbnails#{s}" }

@@ -75,14 +75,23 @@ class CLI < Thor
       api.list_scans.result
     end
 
+
+    deletable_paths = []
+
     scans.each do |remote_scan|
       scan = @client.api { |api| api.get_scan(path: remote_scan[:path]).result }
 
       if scan.save
         puts "downloaded scan #{scan.path}"
+        deletable_paths << remote_scan[:delete_path]
       else
         puts "skipped existing file #{scan.path}"
       end
+    end
+
+    if options[:delete] && deletable_paths.any?
+      puts "deleting downloaded scans"
+      @client.api { |api| api.delete_scans(paths: deletable_paths).result }
     end
   end
 
