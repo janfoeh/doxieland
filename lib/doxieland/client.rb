@@ -20,7 +20,7 @@ module Doxieland
         yield api
       rescue AuthenticationError => e
         puts e.message
-        exit
+        exit(false)
       end
     end
 
