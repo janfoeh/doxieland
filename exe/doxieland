@@ -122,6 +122,12 @@ class CLI < Thor
   end
 
   desc "defaults", "show or set default options for doxieland"
+  method_option :to, desc: "the directory to save the scans to. Defaults to .", type: :string, aliases: '-t'
+  method_option :filenames,
+                type: :string,
+                aliases: '-f',
+                banner: '"FORMAT_STRING"'
+  method_option :delete, desc: "delete scans from scanner after download", type: :boolean, aliases: '-d'
   def defaults
     if options.none?
       config = Doxieland.config
