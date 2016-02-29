@@ -11,12 +11,17 @@ class CLI < Thor
   class_option 'scanner-ip', desc:'your scanners network address', banner: 'xxx.xxx.xxx.xxx', type: :string, aliases: '-i'
   class_option :password, desc:'your scanners password', type: :string, aliases: '-p'
 
+  def initialize(*args, **kargs)
+    super
+
+    @config = (options || HashWithIndifferentAccess.new).reverse_merge(Doxieland.config)
+    @client = Doxieland::Client.new(@config)
+  end
+
   desc "info", "show information about your scanner"
   def info
-    options = get_options_with_defaults
-
     response =
-      Doxieland.api(options) do |api|
+      @client.api do |api|
         api.get_info.result
       end
 
@@ -70,12 +75,6 @@ class CLI < Thor
     else
       File.open(Doxieland.config_path, 'w') { |file| file << YAML.dump(options) }
     end
-  end
-
-    protected
-
-  def get_options_with_defaults
-    (options || HashWithIndifferentAccess.new).reverse_merge(Doxieland.config)
   end
 end
 
