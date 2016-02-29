@@ -6,6 +6,7 @@ require 'apidiesel'
 require 'doxieland/actions/list_scans'
 require 'doxieland/actions/get_info'
 require 'doxieland/api'
+require 'doxieland/scan'
 
 module Doxieland
   class AuthenticationError < StandardError; end
