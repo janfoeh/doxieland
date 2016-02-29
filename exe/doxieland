@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-require 'pry'
 require "doxieland"
 require "thor"
 require "ruby-progressbar"
@@ -113,6 +112,17 @@ class CLI < Thor
     else
       File.open(Doxieland.config_path, 'w') { |file| file << YAML.dump(options) }
     end
+  end
+
+  desc "console", "starts a Pry REPL session", hide: true
+  def console
+    begin
+      require 'pry'
+    rescue LoadError
+      puts "doxieland console requires Pry to be installed: gem install pry"
+      exit
+    end
+    binding.pry
   end
 end
 
