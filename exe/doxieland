@@ -3,7 +3,7 @@ require "doxieland"
 require "thor"
 require "ruby-progressbar"
 require 'hirb'
-require 'pry'
+
 class CLI < Thor
   include Thor::Actions
 
