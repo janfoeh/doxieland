@@ -35,6 +35,11 @@ class CLI < Thor
   def list
     scans = @client.api { |api| api.list_scans.result }
 
+    if scans.none?
+      puts "no scans found"
+      exit
+    end
+
     puts Hirb::Helpers::AutoTable.render(
       scans,
       fields: [:name, :path],
@@ -74,6 +79,10 @@ class CLI < Thor
       api.list_scans.result
     end
 
+    if scans.none?
+      puts "no scans found"
+      exit
+    end
 
     deletable_paths = []
 
