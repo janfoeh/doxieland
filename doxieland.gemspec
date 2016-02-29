@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_runtime_dependency 'activesupport', '>= 4.2'
-  spec.add_runtime_dependency 'apidiesel', '>= 0.8'
+  spec.add_runtime_dependency 'apidiesel', '>= 0.10'
   spec.add_runtime_dependency 'thor', '>= 0.19'
   spec.add_runtime_dependency 'ruby-progressbar', '>= 1.7'
   spec.add_runtime_dependency 'hirb', '>= 0.7'

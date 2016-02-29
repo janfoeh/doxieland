@@ -3,7 +3,6 @@ require "doxieland/version"
 require 'active_support/all'
 require 'apidiesel'
 
-require 'doxieland/handlers/json'
 require 'doxieland/actions/list_scans'
 require 'doxieland/actions/get_info'
 require 'doxieland/api'

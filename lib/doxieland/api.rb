@@ -1,6 +1,6 @@
 module Doxieland
   class Api < Apidiesel::Api
-    use Handlers::JSON
+    use Apidiesel::Handlers::JSON
 
     config :timeout, 4000
     config :username, 'doxie'
