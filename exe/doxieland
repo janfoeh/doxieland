@@ -3,7 +3,7 @@ require "doxieland"
 require "thor"
 require "ruby-progressbar"
 require 'hirb'
-
+require 'pry'
 class CLI < Thor
   include Thor::Actions
 
@@ -36,7 +36,7 @@ class CLI < Thor
     scans = @client.api { |api| api.list_scans.result }
 
     if scans.none?
-      puts "no scans found"
+      logger.info "no scans found"
       exit
     end
 
@@ -45,6 +45,8 @@ class CLI < Thor
       fields: [:name, :path],
       description: false
     )
+
+    logger.info "#{scans.length} scans available"
   end
 
   desc "download", <<-EOT.strip_heredoc
@@ -68,7 +70,7 @@ class CLI < Thor
                 aliases: '-f',
                 banner: '"FORMAT_STRING"',
                 desc: 'filename format string. Default: "doxie_scan_%{date}-%{number}"'
-  method_option :delete, desc: "delete downloaded scans from scanner", type: :boolean, aliases: '-d'
+  method_option :delete, desc: "delete scans from scanner after download", type: :boolean, aliases: '-d'
   def download
     @client.create_save_path
 
@@ -84,13 +86,17 @@ class CLI < Thor
       exit
     end
 
+    log.info "downloading #{scans.length} scans to #{@client.save_path}"
+
     deletable_paths = []
+    save_count      = 0
 
     scans.each do |remote_scan|
       scan = @client.api { |api| api.get_scan(path: remote_scan[:path]).result }
 
       if scan.save
-        puts "downloaded scan #{scan.path}"
+        save_count += 1
+        log.success "downloaded scan #{scan.path}"
         deletable_paths << remote_scan[:delete_path]
       else
         puts "skipped existing file #{scan.path}"
@@ -98,9 +104,11 @@ class CLI < Thor
     end
 
     if options[:delete] && deletable_paths.any?
-      puts "deleting downloaded scans"
+      log.info "deleting downloaded scans"
       @client.api { |api| api.delete_scans(paths: deletable_paths).result }
     end
+
+    log.success "#{save_count} scans downloaded"
   end
 
   desc "defaults", "show or set default options for doxieland"
@@ -110,16 +118,24 @@ class CLI < Thor
 
       if config.any?
         puts Hirb::Helpers::AutoTable.render(
-            config,
-            description:  false,
-            headers:      { 0 => 'option', 1 => 'value' }
-          )
+          config,
+          description:  false,
+          headers:      { 0 => 'option', 1 => 'value' }
+        )
       else
-        puts "no defaults set"
+        log.info "no defaults set"
       end
 
     else
       File.open(Doxieland.config_path, 'w') { |file| file << YAML.dump(options) }
+
+      puts Hirb::Helpers::AutoTable.render(
+        config,
+        description:  false,
+        headers:      { 0 => 'option', 1 => 'value' }
+      )
+
+      log.success "new default settings saved"
     end
   end
 
@@ -128,10 +144,16 @@ class CLI < Thor
     begin
       require 'pry'
     rescue LoadError
-      puts "doxieland console requires Pry to be installed: gem install pry"
+      log.fatal "doxieland console requires Pry to be installed: gem install pry"
       exit
     end
     binding.pry
+  end
+
+  no_commands do
+    def log
+      @client.log
+    end
   end
 end
 

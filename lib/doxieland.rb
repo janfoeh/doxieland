@@ -2,6 +2,7 @@ require "doxieland/version"
 
 require 'active_support/all'
 require 'apidiesel'
+require 'rainbow'
 require 'open-uri'
 require 'cgi'
 require 'pathname'
@@ -14,6 +15,7 @@ require 'doxieland/actions/get_scan'
 require 'doxieland/actions/delete_scans'
 require 'doxieland/api'
 require 'doxieland/scan'
+require 'doxieland/logger'
 require 'doxieland/client'
 
 module Doxieland

@@ -19,7 +19,7 @@ module Doxieland
       begin
         yield api
       rescue AuthenticationError => e
-        puts e.message
+        log.fatal e.message
         exit(false)
       end
     end
@@ -32,6 +32,14 @@ module Doxieland
       end
     end
 
+    def loglevel
+      @options[:verbose] ? :debug : :info
+    end
+
+    def log
+      @logger ||= Logger.new(loglevel)
+    end
+
     def scanner_ip
       @scanner_ip ||= begin
         if @options['scanner-ip']
@@ -42,8 +50,8 @@ module Doxieland
           discovered_ip = ssdp_discover
 
           unless discovered_ip
-            puts "… sorry, your scanner could not be found. Is WiFi turned on and the status light blue?"
-            puts "If you know it, you can also provide the IP address manually via the --scanner-ip flag."
+            log.fatal "… sorry, your scanner could not be found. Is WiFi turned on and the status light blue?"
+            log.info "If you know it, you can also provide the IP address manually via the --scanner-ip flag."
             exit
           end
 
@@ -68,7 +76,7 @@ module Doxieland
         ''
       ].join("\r\n")
 
-      puts "trying to find your scanner on the network. Here, Doxie Doxie…"
+      log.info "trying to find your scanner on the network. Here, Doxie Doxie…"
 
       socket.send(query, 0, '239.255.255.250', 1900)
 
@@ -77,7 +85,7 @@ module Doxieland
       if ready
         _, message_sender = socket.recvfrom(65507)
 
-        puts "found the little rascal! It was hiding at #{message_sender.last}"
+        log.info "found the little rascal hiding at #{message_sender.last}"
 
         message_sender.last
       end
