@@ -1,6 +1,6 @@
 module Doxieland
   class Scan
-    attr_accessor :file, :tempfile, :image_number
+    attr_accessor :file, :tempfile, :image_number, :file_type
 
     DEFAULT_NAME_FORMAT = "doxie_scan_%{date}-%{number}"
 
@@ -29,12 +29,22 @@ module Doxieland
       self.class.save_path + Pathname.new(get_formatted_name)
     end
 
+    def file_type
+      @file_type || 'jpg'
+    end
+
     def save(overwrite: false)
       if File.file?(path) && !overwrite
         return false
       end
 
-      @file = File.open(path, 'wb') { |f| f.write(@tempfile.read) }
+      case file_type
+      when 'jpg'
+        @file = File.open(path, 'wb') { |f| f.write(@tempfile.read) }
+      when 'pdf'
+        run_command("convert #{@tempfile.path} #{path}")
+        @file = File.open(path, 'r')
+      end
 
       @tempfile.close
       @tempfile.unlink
@@ -55,7 +65,7 @@ module Doxieland
         time:   Time.now.strftime(formats[:date])
       }
 
-      format_string % substitutions + '.jpg'
+      format_string % substitutions + '.' + file_type
     end
 
     def extract_formats_from_placeholders
@@ -75,6 +85,16 @@ module Doxieland
       end
 
       return format_string, formats
+    end
+
+    def run_command(command)
+      stdout, stderr, exitstatus = Open3.capture3(command)
+
+      unless exitstatus == 0
+        raise "command #{command} failed: #{stderr}"
+      end
+
+      stdout
     end
 
   end

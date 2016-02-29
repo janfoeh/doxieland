@@ -70,8 +70,16 @@ class CLI < Thor
                 aliases: '-f',
                 banner: '"FORMAT_STRING"',
                 desc: 'filename format string. Default: "doxie_scan_%{date}-%{number}"'
+  method_option :pdf, desc: "convert scans to PDF. Requires ImageMagick to be installed", type: :boolean
   method_option :delete, desc: "delete scans from scanner after download", type: :boolean, aliases: '-d'
   def download
+    if @config[:pdf]
+      unless command_available?('convert')
+        log.fatal "could not find the 'convert' command. PDF conversion requires ImageMagick to be installed"
+        exit(false)
+      end
+    end
+
     @client.create_save_path
 
     Doxieland::Scan.save_path   = @client.save_path
@@ -94,9 +102,16 @@ class CLI < Thor
     save_count      = 0
 
     scans.each do |remote_scan|
-      progressbar.title = "downloading #{remote_scan[:name]}".truncate(17).ljust(20)
+      progressbar.title = "downloading #{remote_scan[:name]}".truncate(22).ljust(25)
 
       scan = @client.api { |api| api.get_scan(path: remote_scan[:path]).result }
+
+      if @config[:pdf]
+        scan.file_type = 'pdf'
+        progressbar.title = "saving #{remote_scan[:name]} as PDF".truncate(22).ljust(25)
+      else
+        progressbar.title = "saving #{remote_scan[:name]}".truncate(22).ljust(25)
+      end
 
       if scan.save
         save_count += 1
@@ -127,6 +142,7 @@ class CLI < Thor
                 type: :string,
                 aliases: '-f',
                 banner: '"FORMAT_STRING"'
+  method_option :pdf, desc: "convert scans to PDF. Requires ImageMagick to be installed", type: :boolean
   method_option :delete, desc: "delete scans from scanner after download", type: :boolean, aliases: '-d'
   def defaults
     if options.none?
@@ -176,9 +192,13 @@ class CLI < Thor
         total: nil,
         format: "%t (%c of %C) |%b\u{1F431}%i| %E",
         progress_mark: "\u{2728}",
-        remainder_mark: " ", title: ' ' * 20
+        remainder_mark: " ", title: ' ' * 25
       })
       ProgressBar.create(**kargs)
+    end
+
+    def command_available?(command)
+      `which #{command}`.present? && $?.exitstatus == 0
     end
   end
 end

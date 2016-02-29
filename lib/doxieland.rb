@@ -7,6 +7,7 @@ require 'open-uri'
 require 'cgi'
 require 'pathname'
 require 'fileutils'
+require 'open3'
 
 require 'doxieland/handlers/file_request'
 require 'doxieland/actions/list_scans'
