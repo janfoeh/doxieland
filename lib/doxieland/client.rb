@@ -85,7 +85,7 @@ module Doxieland
       if ready
         _, message_sender = socket.recvfrom(65507)
 
-        log.info "found the little rascal hiding at #{message_sender.last}"
+        log.success "found the little rascal hiding at #{message_sender.last}"
 
         message_sender.last
       end

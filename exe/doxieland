@@ -36,7 +36,7 @@ class CLI < Thor
     scans = @client.api { |api| api.list_scans.result }
 
     if scans.none?
-      logger.info "no scans found"
+      log.info "no scans found"
       exit
     end
 
@@ -46,7 +46,7 @@ class CLI < Thor
       description: false
     )
 
-    logger.info "#{scans.length} scans available"
+    log.info "#{scans.length} scans available"
   end
 
   desc "download", <<-EOT.strip_heredoc
@@ -82,30 +82,40 @@ class CLI < Thor
     end
 
     if scans.none?
-      puts "no scans found"
+      log.info "0 scans available for download on scanner"
       exit
     end
 
-    log.info "downloading #{scans.length} scans to #{@client.save_path}"
+    log.info "downloading #{scans.length} scans to " + Rainbow(@client.save_path).cyan.bright
+
+    progressbar = create_progressbar(starting_at: 0, total: scans.length)
 
     deletable_paths = []
     save_count      = 0
 
     scans.each do |remote_scan|
+      progressbar.title = "downloading #{remote_scan[:name]}".truncate(17).ljust(20)
+
       scan = @client.api { |api| api.get_scan(path: remote_scan[:path]).result }
 
       if scan.save
         save_count += 1
-        log.success "downloaded scan #{scan.path}"
         deletable_paths << remote_scan[:delete_path]
       else
-        puts "skipped existing file #{scan.path}"
+        log.progress_warn "skipped existing file #{scan.path}", progressbar
       end
+
+      progressbar.increment
     end
 
     if options[:delete] && deletable_paths.any?
-      log.info "deleting downloaded scans"
+      progressbar = create_progressbar(title: "deleting scans".ljust(20))
+
       @client.api { |api| api.delete_scans(paths: deletable_paths).result }
+
+      progressbar.progress = 1
+      progressbar.total    = 1
+      progressbar.finish
     end
 
     log.success "#{save_count} scans downloaded"
@@ -153,6 +163,16 @@ class CLI < Thor
   no_commands do
     def log
       @client.log
+    end
+
+    def create_progressbar(**kargs)
+      kargs.reverse_merge!({
+        total: nil,
+        format: "%t (%c of %C) |%b\u{1F431}%i| %E",
+        progress_mark: "\u{2728}",
+        remainder_mark: " ", title: ' ' * 20
+      })
+      ProgressBar.create(**kargs)
     end
   end
 end
