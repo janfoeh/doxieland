@@ -6,6 +6,7 @@ require 'apidiesel'
 require 'doxieland/handlers/file_request'
 require 'doxieland/actions/list_scans'
 require 'doxieland/actions/get_info'
+require 'doxieland/actions/get_scan'
 require 'doxieland/api'
 require 'doxieland/scan'
 
