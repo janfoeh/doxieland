@@ -67,7 +67,7 @@ class CLI < Thor
                 type: :string,
                 aliases: '-f',
                 banner: '"FORMAT_STRING"',
-                desc: 'filename format string. Default: "doxie_scan_%{number}"'
+                desc: 'filename format string. Default: "doxie_scan_%{date}-%{number}"'
   method_option :delete, desc: "delete downloaded scans from scanner", type: :boolean, aliases: '-d'
   def download
     @client.create_save_path

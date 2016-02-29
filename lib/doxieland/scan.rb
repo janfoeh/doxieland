@@ -2,7 +2,7 @@ module Doxieland
   class Scan
     attr_accessor :file, :tempfile, :image_number
 
-    DEFAULT_NAME_FORMAT = "doxie_scan_%{number}"
+    DEFAULT_NAME_FORMAT = "doxie_scan_%{date}-%{number}"
 
     class << self
       attr_accessor :save_path, :name_format
