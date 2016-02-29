@@ -34,23 +34,11 @@ class CLI < Thor
 
   desc "list", "list all scans saved in your scanners memory"
   def list
-    options = get_options_with_defaults
-
-    scans =
-      Doxieland.api(options) do |api|
-        api.list_scans
-            .result
-            .map do |scan|
-              {
-                name:     scan[:name].match(/[0-9]{4,}/)[0],
-                scanned:  scan[:modified]
-              }
-            end
-      end
+    scans = @client.api { |api| api.list_scans.result }
 
     puts Hirb::Helpers::AutoTable.render(
       scans,
-      fields: [:name, :scanned],
+      fields: [:name, :path],
       description: false
     )
 
